@@ -6,13 +6,13 @@ from PIL import Image
 import time
 from werkzeug.utils import secure_filename
 import numpy as np
-from app import app
 
+app = Flask(__name__)
 CORS(app)
 
 # Configuration
-UPLOAD_FOLDER = '/tmp/uploads'
-OUTPUT_FOLDER = '/tmp/output'
+UPLOAD_FOLDER = 'uploads'
+OUTPUT_FOLDER = 'output'
 MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -31,7 +31,7 @@ def validate_image(file_path):
     except Exception:
         return False
 
-def clean_old_files(directory, max_age_hours=1):
+def clean_old_files(directory, max_age_hours=24):
     current_time = time.time()
     for filename in os.listdir(directory):
         filepath = os.path.join(directory, filename)
@@ -122,7 +122,7 @@ def enhance_image(input_path, output_path, mode='enhance'):
     except Exception as e:
         return False, str(e)
 
-@app.route('/api/upload', methods=['POST'])
+@app.route('/upload', methods=['POST'])
 def upload_file():
     try:
         # Clean old files
@@ -173,13 +173,13 @@ def upload_file():
 
         return jsonify({
             'message': 'Image processed successfully',
-            'enhanced_image': f'/api/get-image/{output_filename}'
+            'enhanced_image': f'/get-image/{output_filename}'
         })
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/get-image/<filename>')
+@app.route('/get-image/<filename>')
 def get_image(filename):
     try:
         # Validate filename to prevent directory traversal
@@ -201,6 +201,7 @@ def get_image(filename):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# For local development
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000) 
+    # Ensure the upload size limit is set
+    app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
+    app.run(debug=True, port=5000, host='0.0.0.0') 
