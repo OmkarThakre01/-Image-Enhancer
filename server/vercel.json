@@ -5,7 +5,8 @@
             "src": "api/index.py",
             "use": "@vercel/python",
             "config": {
-                "runtime": "python3.9"
+                "runtime": "python3.9",
+                "buildCommand": "chmod +x api/build.sh && ./api/build.sh"
             }
         }
     ],
@@ -14,5 +15,8 @@
             "src": "/api/(.*)",
             "dest": "api/index.py"
         }
-    ]
+    ],
+    "env": {
+        "PYTHON_VERSION": "3.9"
+    }
 } 
